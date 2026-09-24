@@ -18,6 +18,16 @@ app.get("/api/health", (_req, res) => {
   res.json({ ok: true, service: "novasolar-backend", time: new Date().toISOString() });
 });
 
+// Re-runs the (idempotent) demo-data seed on demand. Needed because the free
+// Render plan has no persistent disk and no Shell tab, so if the ephemeral
+// SQLite file is ever reset by a restart, this is the only way to repopulate
+// demo installers without a full redeploy.
+app.post("/api/admin/reseed", (_req, res) => {
+  seedDemoInstallers();
+  const count = db.prepare("SELECT COUNT(*) AS c FROM installers WHERE isDemo = 1").get().c;
+  res.json({ ok: true, demoInstallerCount: count });
+});
+
 // ---------- Leads ----------
 
 app.post("/api/leads", (req, res) => {
@@ -140,6 +150,12 @@ app.post("/api/installers", (req, res) => {
   });
 
   res.status(201).json(db.prepare("SELECT * FROM installers WHERE id = ?").get(id));
+});
+
+app.delete("/api/installers/:id", (req, res) => {
+  const result = db.prepare("DELETE FROM installers WHERE id = ?").run(req.params.id);
+  if (result.changes === 0) return res.status(404).json({ error: "Installer not found." });
+  res.status(204).end();
 });
 
 app.listen(PORT, () => {
