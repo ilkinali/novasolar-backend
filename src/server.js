@@ -2,6 +2,9 @@ import express from "express";
 import cors from "cors";
 import { randomUUID } from "node:crypto";
 import { db } from "./db.js";
+import { seedDemoInstallers } from "./seed.js";
+
+seedDemoInstallers();
 
 const app = express();
 const PORT = process.env.PORT || 4000;

@@ -1,6 +1,10 @@
 // Seeds a handful of clearly-marked DEMO installers so the app has something
 // to show before any real installer partners are onboarded. Real installers
 // should be added via POST /api/installers with isDemo left false/omitted.
+//
+// Exported as a function so server.js can call it automatically on startup
+// (useful on hosts like Render's free tier, which has no shell access to
+// run `npm run seed` by hand) as well as via `npm run seed` directly.
 
 import { randomUUID } from "node:crypto";
 import { db } from "./db.js";
@@ -45,18 +49,25 @@ const demoInstallers = [
   }
 ];
 
-const insert = db.prepare(`
-  INSERT INTO installers (id, name, rating, reviewCount, latitude, longitude, serviceRadiusKm, pricePerKWp, note, badges, icon, iconColor, isDemo)
-  VALUES (@id, @name, @rating, @reviewCount, @latitude, @longitude, @serviceRadiusKm, @pricePerKWp, @note, @badges, @icon, @iconColor, 1)
-`);
+export function seedDemoInstallers() {
+  const insert = db.prepare(`
+    INSERT INTO installers (id, name, rating, reviewCount, latitude, longitude, serviceRadiusKm, pricePerKWp, note, badges, icon, iconColor, isDemo)
+    VALUES (@id, @name, @rating, @reviewCount, @latitude, @longitude, @serviceRadiusKm, @pricePerKWp, @note, @badges, @icon, @iconColor, 1)
+  `);
 
-const existing = db.prepare("SELECT COUNT(*) AS c FROM installers WHERE isDemo = 1").get();
-if (existing.c === 0) {
-  const insertMany = db.transaction((rows) => {
-    for (const row of rows) insert.run({ id: randomUUID(), ...row });
-  });
-  insertMany(demoInstallers);
-  console.log(`Seeded ${demoInstallers.length} demo installers.`);
-} else {
-  console.log("Demo installers already present, skipping seed.");
+  const existing = db.prepare("SELECT COUNT(*) AS c FROM installers WHERE isDemo = 1").get();
+  if (existing.c === 0) {
+    const insertMany = db.transaction((rows) => {
+      for (const row of rows) insert.run({ id: randomUUID(), ...row });
+    });
+    insertMany(demoInstallers);
+    console.log(`Seeded ${demoInstallers.length} demo installers.`);
+  } else {
+    console.log("Demo installers already present, skipping seed.");
+  }
+}
+
+// Still runnable directly: `npm run seed`
+if (import.meta.url === `file://${process.argv[1]}`) {
+  seedDemoInstallers();
 }
