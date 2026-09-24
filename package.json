@@ -1,0 +1,16 @@
+{
+  "name": "novasolar-backend",
+  "version": "1.0.0",
+  "description": "NovaSolar AI backend — lead capture + installer directory API.",
+  "type": "module",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "seed": "node src/seed.js"
+  },
+  "dependencies": {
+    "better-sqlite3": "^11.3.0",
+    "cors": "^2.8.5",
+    "express": "^4.21.0"
+  }
+}

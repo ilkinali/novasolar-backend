@@ -1,0 +1,21 @@
+# Render "Blueprint" — lets Render read this file and set up the service
+# automatically instead of clicking through every setting by hand.
+# Docs: https://render.com/docs/blueprint-spec
+
+services:
+  - type: web
+    name: novasolar-backend
+    runtime: node
+    plan: starter          # smallest paid plan — needed for the persistent disk below
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /api/health
+    disk:
+      name: novasolar-data
+      mountPath: /var/data
+      sizeGB: 1
+    envVars:
+      - key: PORT
+        value: 4000
+      - key: DATA_DIR
+        value: /var/data
