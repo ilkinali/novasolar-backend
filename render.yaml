@@ -1,21 +1,20 @@
 # Render "Blueprint" — lets Render read this file and set up the service
 # automatically instead of clicking through every setting by hand.
 # Docs: https://render.com/docs/blueprint-spec
+#
+# Free plan: no persistent disk, so the SQLite file resets on restart/redeploy
+# and after ~15 min idle (free services sleep). Fine for demos; switch `plan`
+# to `starter` and add a `disk:` block back (see git history) once real leads
+# need to survive restarts.
 
 services:
   - type: web
     name: novasolar-backend
     runtime: node
-    plan: starter          # smallest paid plan — needed for the persistent disk below
+    plan: free
     buildCommand: npm install
     startCommand: npm start
     healthCheckPath: /api/health
-    disk:
-      name: novasolar-data
-      mountPath: /var/data
-      sizeGB: 1
     envVars:
       - key: PORT
         value: 4000
-      - key: DATA_DIR
-        value: /var/data
