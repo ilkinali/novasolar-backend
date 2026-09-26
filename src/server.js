@@ -3,14 +3,22 @@ import cors from "cors";
 import { randomUUID } from "node:crypto";
 import { db } from "./db.js";
 import { seedDemoInstallers } from "./seed.js";
+import { aiRouter } from "./ai.js";
 
 seedDemoInstallers();
 
 const app = express();
 const PORT = process.env.PORT || 4000;
 
+// Render sits behind a reverse proxy; without this, req.ip returns the
+// proxy's address for every request, making the AI endpoint's per-IP rate
+// limit apply globally instead of per caller.
+app.set("trust proxy", true);
+
 app.use(cors());
-app.use(express.json());
+app.use(express.json({ limit: "10mb" })); // roof photos are base64-encoded in the body
+
+app.use("/api/ai", aiRouter);
 
 // ---------- Health ----------
 

@@ -18,3 +18,5 @@ services:
     envVars:
       - key: PORT
         value: 4000
+      - key: OPENAI_API_KEY
+        sync: false # set in the Render dashboard (Environment tab) — never stored in git
